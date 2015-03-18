@@ -6,8 +6,11 @@
  */
 
 #include "Player.h"
+#include "Server.h"
+#include "Client.h"
 
-Player::Player()
+Player::Player(Server* server, int id, int socket)
+: Client(server, id, socket)
 {
 }
 

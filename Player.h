@@ -10,12 +10,12 @@
 
 #include "Client.h"
 
+class Server;
 
 class Player : public Client
 {
 public:
-    Player();
-    Player(const Player& orig);
+    Player(Server* server, int id, int socket);
     virtual ~Player();
 private:
 

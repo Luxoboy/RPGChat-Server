@@ -8,14 +8,18 @@
 #ifndef CLIENT_H
 #define	CLIENT_H
 
+class Server;
+
+
 class Client
 {
 public:
-    Client();
-    Client(const Client& orig);
+    Client(Server *server, int id, int socket);
     virtual ~Client();
 private:
-
+    int id;
+    int socket;
+    Server *server;
 };
 
 #endif	/* CLIENT_H */

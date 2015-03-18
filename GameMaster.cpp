@@ -6,8 +6,11 @@
  */
 
 #include "GameMaster.h"
+#include "Server.h"
+#include "Client.h"
 
-GameMaster::GameMaster()
+GameMaster::GameMaster(Server* server, int id, int socket)
+: Client(server, id, socket)
 {
 }
 

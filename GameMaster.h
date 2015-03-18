@@ -10,12 +10,11 @@
 
 #include "Client.h"
 
-
+class Server;
 class GameMaster : public Client
 {
 public:
-    GameMaster();
-    GameMaster(const GameMaster& orig);
+    GameMaster(Server* server, int id, int socket);
     virtual ~GameMaster();
 private:
 

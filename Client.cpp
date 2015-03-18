@@ -6,13 +6,13 @@
  */
 
 #include "Client.h"
+#include "Server.h"
 
-Client::Client()
+Client::Client(Server *server, int id, int socket)
 {
-}
-
-Client::Client(const Client& orig)
-{
+    this->id = id;
+    this->socket = socket;
+    this->server = server;
 }
 
 Client::~Client()
