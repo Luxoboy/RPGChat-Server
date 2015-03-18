@@ -8,8 +8,7 @@
 #ifndef SERVER_H
 #define	SERVER_H
 
-#define SERVER_PORT 4654
-
+#define SERVER_PORT "4654"
 #include <sys/socket.h> // Needed for the socket functions
 #include <netdb.h>    
 
