@@ -9,9 +9,11 @@
 #define	SERVER_H
 
 #define SERVER_PORT "4654"
-#include <sys/socket.h> // Needed for the socket functions
-#include <netdb.h>    
 
+#include <sys/socket.h>
+#include <netdb.h>    
+#include <thread>
+#include <mutex>
 
 class Server
 {
@@ -21,6 +23,7 @@ public:
      * Sets the READY bool.
      */
     Server();
+    
     virtual ~Server();
     
     /**
@@ -30,13 +33,23 @@ public:
      */
     bool ready();
     
+    /**
+     * Starts the accepting thread. 
+     * Should be called in order to allow players to connect to the server.
+     * Should be called only when ready() returns true.
+     * @return 
+     */
+    bool accept();
 private:
     bool READY; //Indicates wether everything went well in construtor.
+    bool ACCEPTING;
     int status; //Status variable
     int bind_socketfb; //Socket descriptor of listening socket.
     struct addrinfo host_info;       // The struct that getaddrinfo() fills up with data.
     struct addrinfo *host_info_list; // Pointer to the to the linked list of host_info's.
-    
+    std::thread *accepting_thread;
+    std::mutex accepting_mutex;
+    void accept_thread();
 };
 
 #endif	/* SERVER_H */
