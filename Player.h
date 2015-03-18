@@ -8,7 +8,10 @@
 #ifndef PLAYER_H
 #define	PLAYER_H
 
-class Player
+#include "Client.h"
+
+
+class Player : public Client
 {
 public:
     Player();

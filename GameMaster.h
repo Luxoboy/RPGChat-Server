@@ -8,7 +8,10 @@
 #ifndef GAMEMASTER_H
 #define	GAMEMASTER_H
 
-class GameMaster
+#include "Client.h"
+
+
+class GameMaster : public Client
 {
 public:
     GameMaster();
