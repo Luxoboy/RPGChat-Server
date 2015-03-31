@@ -38,7 +38,7 @@ private:
      * Exemple : [Client 1]
      * @return The string to be put at the begining of the output line.
      */
-    virtual const char* prefix();
+    virtual const char* prefix(char* append = NULL);
     
     
     

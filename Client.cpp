@@ -18,15 +18,18 @@ using namespace std;
 Client::Client(Server *server, int id, int socket)
 : writing_mutex()
 {
-    cout << "[CLIENT] Entering client constructor, id = " << id << endl;
     this->id = id;
+    cout << prefix() << "Entering client constructor, id = " << id << endl;
     this->socket = socket;
     this->server = server;
     writing_mutex.lock();
     
     cout << prefix() << "Creating reading and listening threads." << endl;
     
+    readingThread = new thread(&Client::_readingThread, this);
+    writingThread = new thread(&Client::_writingThread, this);
     
+    cout << prefix() << "Done creating threads." << endl;
 }
 
 Client::~Client()
@@ -41,16 +44,15 @@ void Client::_readingThread()
         int res = recv(socket, buf, 1000, MSG_DONTWAIT);
         if(res == 0)
         {
-            cout << prefix() << "Client shut down connexion.";
+            cout << prefix("reading thread") << "Client shut down connexion.";
             break;
         }
-        if(res == -1)
+        if(res != -1)
         {
-            perror(prefix());
-            break;
+            cout << prefix() << "Received message: \"" << buf << "\"" << endl;
+            char buf_free[1000];
+            strcpy(buf, buf_free);
         }
-        char buf_free[1000];
-        strcpy(buf, buf_free);
     }
 }
 
@@ -58,7 +60,7 @@ void Client::_writingThread()
 {
     while(true)
     {
-        writing_mutex.unlock();
+        writing_mutex.lock();
         for(string msg : msgToWrite)
         {
             cout << prefix() << "Trying to send following message \"" << msg 
@@ -70,16 +72,21 @@ void Client::_writingThread()
             }
             else
             {
-                perror(prefix());
+                perror(prefix("writing thread"));
             }
         }
     }
 }
 
-const char* Client::prefix()
+const char* Client::prefix(char* append)
 {
     string ret = "[Client ";
-    ret += id; 
+    ret += to_string(id);
+    if(append != NULL)
+    {
+        ret += " ";
+        ret += append;
+    }
     ret += "] ";
     return ret.c_str();
 }

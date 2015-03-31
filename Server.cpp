@@ -6,6 +6,7 @@
  */
 
 #include "Server.h"
+#include "GameMaster.h"
 
 #include <iostream>
 #include <string.h>
@@ -117,6 +118,20 @@ void Server::accept_thread()
         {
             int new_socket = accept4(bind_socketfb, (struct sockaddr *)&their_addr, 
                     &addr_size, SOCK_NONBLOCK);
+            if(new_socket != -1)
+            {
+                cout << "[SERVER] New connexion!" << endl;
+                if(master == NULL)
+                {
+                    cout << "[SERVER] First client, creating game master." << endl;
+                    master = new GameMaster(this, 0, new_socket);
+                }
+                else
+                {
+                    cout << "[SERVER] Adding new player." << endl;
+                    new Player(this, player_ids++, new_socket);
+                }
+            }
         }
         accepting_mutex.unlock();
     }

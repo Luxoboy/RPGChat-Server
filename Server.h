@@ -16,6 +16,8 @@
 #include <mutex>
 #include <vector>
 
+#include "Player.h"
+
 class GameMaster;
 class Player;
 
@@ -44,11 +46,20 @@ public:
      * @return 
      */
     bool accept();
+    
+    /**
+     * Called by players when trying to join the game.
+     * @param player The player who requested joining the game
+     * @return 0 if successull, error code otherwise.
+     */
+    int joinGame(Player* player);
+    
 private:
     bool READY; //Indicates wether everything went well in construtor.
     bool ACCEPTING;
     int status; //Status variable
     int bind_socketfb; //Socket descriptor of listening socket.
+    int player_ids; //Incremented id for players.
     struct addrinfo host_info;       // The struct that getaddrinfo() fills up with data.
     struct addrinfo *host_info_list; // Pointer to the to the linked list of host_info's.
     std::thread *accepting_thread;

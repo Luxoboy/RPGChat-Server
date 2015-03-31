@@ -17,6 +17,7 @@ public:
     GameMaster(Server* server, int id, int socket);
     virtual ~GameMaster();
 private:
+    virtual const char* prefix(char* append = NULL);
 
 };
 
