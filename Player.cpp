@@ -14,10 +14,6 @@ Player::Player(Server* server, int id, int socket)
 {
 }
 
-Player::Player(const Player& orig)
-{
-}
-
 Player::~Player()
 {
 }

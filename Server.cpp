@@ -23,6 +23,7 @@ Server::Server()
     READY = false;
     ACCEPTING = false;
     accepting_thread = NULL;
+    master = NULL;
     
     memset(&host_info, 0, sizeof host_info);
     host_info.ai_family = AF_UNSPEC;
@@ -108,6 +109,7 @@ void Server::accept_thread()
 {
     struct sockaddr_storage their_addr;
     socklen_t addr_size = sizeof(their_addr);
+    cout << "[SERVER] Entering accepting loop..." << endl;
     while(true)
     {
         accepting_mutex.lock();
@@ -115,7 +117,6 @@ void Server::accept_thread()
         {
             int new_socket = accept4(bind_socketfb, (struct sockaddr *)&their_addr, 
                     &addr_size, SOCK_NONBLOCK);
-            cout << "[SERVER] Accepting loop" << endl;
         }
         accepting_mutex.unlock();
     }

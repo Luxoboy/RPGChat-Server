@@ -14,9 +14,6 @@ GameMaster::GameMaster(Server* server, int id, int socket)
 {
 }
 
-GameMaster::GameMaster(const GameMaster& orig)
-{
-}
 
 GameMaster::~GameMaster()
 {

@@ -14,6 +14,10 @@
 #include <netdb.h>    
 #include <thread>
 #include <mutex>
+#include <vector>
+
+class GameMaster;
+class Player;
 
 class Server
 {
@@ -49,6 +53,10 @@ private:
     struct addrinfo *host_info_list; // Pointer to the to the linked list of host_info's.
     std::thread *accepting_thread;
     std::mutex accepting_mutex;
+    
+    GameMaster* master; //Master of the game.
+    std::vector<Player*> players; //Players of the game.
+    
     void accept_thread();
 };
 
