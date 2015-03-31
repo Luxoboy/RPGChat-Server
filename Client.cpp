@@ -51,7 +51,8 @@ void Client::_readingThread()
         {
             cout << prefix() << "Received message: \"" << buf << "\"" << endl;
             char buf_free[1000];
-            strcpy(buf, buf_free);
+            strcpy(buf_free, buf);
+            execCmd(buf_free);
         }
     }
 }
@@ -61,11 +62,11 @@ void Client::_writingThread()
     while(true)
     {
         writing_mutex.lock();
-        for(string msg : msgToWrite)
+        for(char* msg : msgToWrite)
         {
-            cout << prefix() << "Trying to send following message \"" << msg 
+            cout << prefix("writing thread") << "Trying to send following message \"" << msg 
                     << "\"" << endl;
-            int res = send(socket, msg.c_str(), msg.size(), 0);
+            int res = send(socket, msg, strlen(msg), 0);
             if(res != -1)
             {
                 cout << prefix() << "Message sent successfully." << endl;
@@ -75,10 +76,11 @@ void Client::_writingThread()
                 perror(prefix("writing thread"));
             }
         }
+        msgToWrite.clear();
     }
 }
 
-const char* Client::prefix(char* append)
+const char* Client::prefix(const char* append)
 {
     string ret = "[Client ";
     ret += to_string(id);
@@ -91,8 +93,53 @@ const char* Client::prefix(char* append)
     return ret.c_str();
 }
 
-void Client::sendMsg(string msg)
+void Client::sendMsg(char* msg)
 {
+    cout << prefix("sendMsg") << "Sending following message: \"" << msg << "\""
+            << endl;
     msgToWrite.push_back(msg);
     writing_mutex.unlock();
 }
+
+char* Client::extractCmd(char* msg)
+{
+    char*ret = NULL;
+    if(msg[0] == '/' )
+    {
+        ret = strtok(msg, " ");
+    }
+    return ret;
+}
+
+void Client::sendCode(int code)
+{
+    char str[5];
+    sprintf(str, "%d", code);
+    msgToWrite.push_back(str);
+    writing_mutex.unlock();
+}
+
+bool Client::checkChars(char* msg)
+{
+    for(int i=0; i < strlen(msg); i++)
+    {
+        char c = msg[i];
+        bool valid = false;
+        if(c >= '0' && c <= '9')
+            valid = true;
+        else if(c >= 'A' && c <= 'Z')
+            valid = true;
+        else if(c >= 'a' && c <= 'z')
+            valid = true;
+        if(!valid)
+            return false;
+    }
+    return true;
+}
+
+void Client::talk(char* msg)
+{
+    server->talk(msg, this);
+}
+
+

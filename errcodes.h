@@ -1,0 +1,27 @@
+/* 
+ * File:   errcodes.h
+ * Author: Anthony Correia <anthony.correia71@gmail.com>
+ *
+ * Created on 31 mars 2015, 12:13
+ */
+
+#ifndef ERRCODES_H
+#define	ERRCODES_H
+
+#define SUCCESS 100
+#define NICKNAME_NOT_VALID 101
+#define NICKNAME_ALREADY_USED 102
+#define GAME_HAS_NOT_STARTED 103
+#define CANNOT_JOIN_IF_MASTER 104
+#define YOU_ARE_DEAD 105
+#define NB_PLAYERS_MUST_BE_POSITIVE_INT 106
+#define MUST_SET_NB_PLAYERS 107
+#define NOT_ENOUGH_PLAYERS 108
+#define NO_SLOT_AVAILABLE 109
+#define NICKNAME_DOES_NOT_EXIST 110
+#define INTERVAL_BOUNDS_INVALID 111
+#define YOU_ARE_GAMEMASTER 112
+#define YOU_MUST_CHOOSE_A_NICKNAME 113
+
+#endif	/* ERRCODES_H */
+

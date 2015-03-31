@@ -17,7 +17,19 @@ class Player : public Client
 public:
     Player(Server* server, int id, int socket);
     virtual ~Player();
+    
+    /**
+     * Returns new allocated string to nickname.
+     * Returned string should be deleted from memory.
+     * @return Newly allocated string pointing to player's nickname.
+     */
+    char* getNickname() const;
 private:
+    char nickname[11]; //Nickname displayed to other players. Set when joining
+
+    virtual bool execCmd(char* msg);
+    
+    bool join(char* nickname);
 
 };
 

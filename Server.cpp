@@ -25,6 +25,7 @@ Server::Server()
     ACCEPTING = false;
     accepting_thread = NULL;
     master = NULL;
+    player_ids = 1;
     
     memset(&host_info, 0, sizeof host_info);
     host_info.ai_family = AF_UNSPEC;
@@ -135,6 +136,28 @@ void Server::accept_thread()
         }
         accepting_mutex.unlock();
     }
-    
-    
 }
+
+int Server::joinGame(Player* player)
+{
+    char* nickname = player->getNickname();
+    cout << "[SERVER] New player joined the game: " << nickname << "." << endl;
+    delete nickname;
+    players.push_back(player);
+}
+
+void Server::talk(char* msg, Client* except)
+{
+    cout << "[SERVER] Sending message to all clients: \"" << msg << "\"" << endl;
+    if(master != except)
+    {
+        master->sendMsg(msg);
+    }
+    for(Player*& p : players)
+    {
+        if(p != except)
+            p->sendMsg(msg);
+    }
+}
+
+

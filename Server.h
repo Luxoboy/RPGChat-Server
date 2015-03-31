@@ -54,6 +54,13 @@ public:
      */
     int joinGame(Player* player);
     
+    /**
+     * Send a message to all players, except sender.
+     * @param except The client who sent the message
+     * @param msg The message to be sent.
+     */
+    void talk(char* msg, Client* except);
+    
 private:
     bool READY; //Indicates wether everything went well in construtor.
     bool ACCEPTING;
