@@ -143,7 +143,7 @@ int Server::joinGame(Player* player)
     char* nickname = player->getNickname();
     cout << "[SERVER] New player joined the game: " << nickname << "." << endl;
     delete nickname;
-    players.push_back(player);
+    players.insert(player);
 }
 
 void Server::talk(char* msg, Client* except)
@@ -153,11 +153,17 @@ void Server::talk(char* msg, Client* except)
     {
         master->sendMsg(msg);
     }
-    for(Player*& p : players)
+    for(Player* p : players)
     {
         if(p != except)
             p->sendMsg(msg);
     }
 }
+
+bool Server::hasJoined(Player* p)
+{
+    return players.find(p) != players.end();
+}
+
 
 

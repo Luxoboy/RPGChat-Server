@@ -14,7 +14,7 @@
 #include <netdb.h>    
 #include <thread>
 #include <mutex>
-#include <vector>
+#include <set>
 
 #include "Player.h"
 
@@ -61,6 +61,13 @@ public:
      */
     void talk(char* msg, Client* except);
     
+    /**
+     * Tells wether a player has already joined the game.
+     * @param p Player to check.
+     * @return True if the player has already joined.
+     */
+    bool hasJoined(Player* p);
+    
 private:
     bool READY; //Indicates wether everything went well in construtor.
     bool ACCEPTING;
@@ -73,7 +80,7 @@ private:
     std::mutex accepting_mutex;
     
     GameMaster* master; //Master of the game.
-    std::vector<Player*> players; //Players of the game.
+    std::set<Player*> players; //Players of the game.
     
     void accept_thread();
 };
