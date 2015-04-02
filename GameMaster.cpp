@@ -147,6 +147,10 @@ bool GameMaster::execCmd(char* msg)
             }
         }
     }
+    else if(strcmp("/players", cmd) == 0)
+    {
+        ret = playersInfo();
+    }
     delete msg;
     return ret;
 }

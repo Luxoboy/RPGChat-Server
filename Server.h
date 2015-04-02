@@ -18,9 +18,11 @@
 
 #include "Player.h"
 
-
 bool compareStr(const char* a, const char* b);
 
+namespace Json{
+    class Value;
+}
 
 class GameMaster;
 class Player;
@@ -127,6 +129,13 @@ public:
      * @return True if running.
      */
     bool isPlaying();
+    
+    /**
+     * Returns info about the players (who joined the game).
+     * @param c Client asking the info.
+     * @return Info formatted in JSON.
+     */
+    char *playersInfo(Client* c);
     
 private:
     

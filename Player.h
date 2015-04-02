@@ -24,6 +24,8 @@ public:
      * @return Newly allocated string pointing to player's nickname.
      */
     char* getNickname() const;
+    
+    int getLifePoint();
 private:
     char nickname[11]; //Nickname displayed to other players. Set when joining.
     int lifePoints;

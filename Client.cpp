@@ -42,7 +42,7 @@ void Client::_readingThread()
     char buf[1000];
     while(true)
     {
-        int res = recv(socket, buf, 1000, MSG_DONTWAIT);
+        int res = recv(socket, buf, 1000, 0);
         if(res == 0)
         {
             cout << prefix("reading thread") << "Client shut down connexion.";
@@ -112,7 +112,7 @@ char* Client::extractCmd(char* msg)
     char*ret = NULL;
     if(msg[0] == '/' )
     {
-        ret = strtok(msg, " ");
+        ret = strtok(msg, " \r\n");
     }
     return ret;
 }
@@ -158,4 +158,16 @@ bool Client::talk()
     return ret;
 }
 
-
+bool Client::playersInfo()
+{
+    bool ret = false;
+    if(!server->isPlaying())
+            sendCode(GAME_HAS_NOT_STARTED);
+    else
+    {
+        char* res = server->playersInfo(this);
+        sendMsg(res);
+        ret = true;
+    }
+    return ret;
+}

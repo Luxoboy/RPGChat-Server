@@ -76,6 +76,11 @@ protected:
      * @return True if mesage is correct and was successfully sent.
      */
     bool talk();
+    
+    /**
+     * Gets players info from server and sends it.
+     */
+    bool playersInfo();
 };
 
 #endif	/* CLIENT_H */

@@ -9,6 +9,8 @@
 #include "GameMaster.h"
 #include "errcodes.h"
 
+#include "json/json.h"
+
 #include <iostream>
 #include <string.h>
 #include <cstdio>
@@ -46,13 +48,21 @@ Server::Server()
     }
     
     cout << "Creating the listening socket"  << std::endl;
-    bind_socketfb = socket(host_info_list->ai_family, host_info_list->ai_socktype | SOCK_NONBLOCK,
+    bind_socketfb = socket(host_info_list->ai_family, host_info_list->ai_socktype,
                       host_info_list->ai_protocol);
     if (bind_socketfb == -1)  
     {
         perror("[SERVER] Creating listening socket");
         return;
     }
+    
+    struct timeval timeout;      
+    timeout.tv_sec = 3;
+    timeout.tv_usec = 0;
+    
+    if (setsockopt(bind_socketfb, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+                sizeof(timeout)) < 0)
+        perror("[SERVER] Setting socket timeout");
 
     cout << "Binding socket..."  << std::endl;
     int yes = 1;
@@ -123,10 +133,17 @@ void Server::accept_thread()
         if(ACCEPTING)
         {
             int new_socket = accept4(bind_socketfb, (struct sockaddr *)&their_addr, 
-                    &addr_size, SOCK_NONBLOCK);
+                    &addr_size, 0);
             if(new_socket != -1)
             {
                 cout << "[SERVER] New connexion!" << endl;
+                struct timeval timeout;      
+                timeout.tv_sec = 3;
+                timeout.tv_usec = 0;
+
+                if (setsockopt(new_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+                            sizeof(timeout)) < 0)
+                    perror("[SERVER] Setting socket timeout for new client");
                 if(master == NULL)
                 {
                     cout << "[SERVER] First client, creating game master." << endl;
@@ -274,4 +291,31 @@ int Server::getConnectedPlayers()
 bool Server::isSetNbPlayers()
 {
     return NB_PLAYERS > 0;
+}
+
+char *Server::playersInfo(Client* c)
+{
+    Json::Value root;
+    root["cmd"] = "players";
+    Json::Value array = Json::arrayValue;
+    for(Player* p : players)
+    {
+        if(p != c)
+        {
+            Json::Value pval;
+            char* nickname = p->getNickname();
+            pval["nickmane"] = nickname;
+            delete nickname;
+            pval["alive"] = p->getLifePoint() > 0;
+            if(c == master)
+                pval["lp"] = p->getLifePoint();
+            array.append(pval);
+        }
+    }
+    root["players"] = array;
+    Json::FastWriter wr;
+    string str = wr.write(root);
+    char* ret = new char[str.length()+1];
+    strcpy(ret, str.c_str());
+    return ret;
 }

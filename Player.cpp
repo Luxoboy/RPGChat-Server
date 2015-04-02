@@ -38,6 +38,10 @@ bool Player::execCmd(char* msg)
         else
             sendCode(GAME_HAS_NOT_STARTED);
     }
+    else if(strcmp("/players", cmd) == 0)
+    {
+        ret = playersInfo();
+    }
     delete msg;
     return ret;
 }
@@ -79,4 +83,7 @@ char* Player::getNickname() const
     return copy;
 }
 
-
+int Player::getLifePoint()
+{
+    return lifePoints;
+}
