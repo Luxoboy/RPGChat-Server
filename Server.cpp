@@ -15,6 +15,7 @@
 #include <thread>
 #include <algorithm>
 #include <ctype.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ Server::Server()
     cout << "[SERVER] Entering Server constructor." << endl <<
             "[SERVER] Init variables." << endl;
     
-    
+    srand(time(NULL));
     READY = false;
     ACCEPTING = false;
     accepting_thread = NULL;

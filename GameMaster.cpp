@@ -10,13 +10,14 @@
 #include "Client.h"
 #include "errcodes.h"
 
-#include "json.h"
+#include "json/json.h"
 
 #include <string>
 #include <cstring>
 #include <cstdlib>
 
 using namespace std;
+using namespace Json;
 
 GameMaster::GameMaster(Server* server, int id, int socket)
 : Client(server, id, socket)
@@ -60,10 +61,11 @@ bool GameMaster::execCmd(char* msg)
         if(arg1 != NULL)
         {
             long nb = strtol(arg1, NULL, 0);
-            if(nb != 0L)
+            if(nb != 0L && nb > 0)
             {
                 server->setNbPlayers(nb);
                 ret = true;
+                sendCode(SUCCESS);
             }
             else
                 sendCode(NB_PLAYERS_MUST_BE_POSITIVE_INT);
@@ -115,6 +117,34 @@ bool GameMaster::execCmd(char* msg)
                 sendCode(NICKNAME_DOES_NOT_EXIST);
             else
                 sendCode(SUCCESS);
+        }
+    }
+    else if(strcmp("/rand", cmd) == 0)
+    {
+        arg1 = strtok(NULL, " ");
+        arg2 = strtok(NULL, "\r");
+        if(arg1 == NULL || arg2 == NULL)
+            sendCode(MISSING_ARGUMENT);
+        else
+        {
+            long min = strtol(arg1, NULL, 0),
+                    max = strtol(arg2, NULL, 0);
+            if(min != 0L && max != 0L && min < max)
+            {
+                int res = (rand()%(max+min+1))+min;
+                Value answer;
+                answer["cmd"] = "rand";
+                answer["rand"] = res;
+                FastWriter writer;
+                string str = writer.write(answer);
+                char* str_c = new char[str.length()+1];
+                strcpy(str_c, str.c_str());
+                sendMsg(str_c);
+            }
+            else
+            {
+                sendCode(INTERVAL_BOUNDS_INVALID);
+            }
         }
     }
     delete msg;
