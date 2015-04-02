@@ -23,12 +23,19 @@ public:
     virtual ~Client();
     
     void sendMsg(char* msg);
+    
+    /**
+     * Send error code to client.
+     * @param code The error code, as described in protocol.
+     */
+    void sendCode(int code);
 protected:
     int id;
     int socket; //Socket between server and connected client
     Server *server;
     std::thread *readingThread, *writingThread;
-    std::mutex writing_mutex;
+    std::mutex writing_mutex; //Mutex to trigger writing thread to actually send messages.
+    std::mutex msgToWrite_mutex; //Mutex to protect access to messages vector.
     std::vector<char*> msgToWrite;
     void _readingThread();
     void _writingThread();
@@ -56,12 +63,6 @@ protected:
     char* extractCmd(char* msg);
     
     /**
-     * Send error code to client.
-     * @param code The error code, as described in protocol.
-     */
-    void sendCode(int code);
-    
-    /**
      * Check if a string contains only letters and numbers.
      * @param msg The string to check
      * @return True if string is valid, false otherwise.
@@ -72,8 +73,9 @@ protected:
      * Talks to every other players.
      * Message is transmitted to server who broadcasts the message.
      * @param msg Message to be sent.
+     * @return True if mesage is correct and was successfully sent.
      */
-    void talk(char* msg);
+    bool talk();
 };
 
 #endif	/* CLIENT_H */

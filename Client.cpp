@@ -7,6 +7,7 @@
 
 #include "Client.h"
 #include "Server.h"
+#include "errcodes.h"
 
 #include <unistd.h>
 #include <iostream>
@@ -16,7 +17,7 @@
 using namespace std;
 
 Client::Client(Server *server, int id, int socket)
-: writing_mutex()
+: writing_mutex(), msgToWrite_mutex()
 {
     this->id = id;
     cout << prefix() << "Entering client constructor, id = " << id << endl;
@@ -50,7 +51,7 @@ void Client::_readingThread()
         if(res != -1)
         {
             cout << prefix() << "Received message: \"" << buf << "\"" << endl;
-            char buf_free[1000];
+            char *buf_free = new char[strlen(buf)+1];
             strcpy(buf_free, buf);
             execCmd(buf_free);
         }
@@ -62,6 +63,7 @@ void Client::_writingThread()
     while(true)
     {
         writing_mutex.lock();
+        msgToWrite_mutex.lock();
         for(char* msg : msgToWrite)
         {
             cout << prefix("writing thread") << "Trying to send following message \"" << msg 
@@ -78,6 +80,7 @@ void Client::_writingThread()
             delete msg;
         }
         msgToWrite.clear();
+        msgToWrite_mutex.unlock();
     }
 }
 
@@ -98,7 +101,9 @@ void Client::sendMsg(char* msg)
 {
     cout << prefix("sendMsg") << "Sending following message: \"" << msg << "\""
             << endl;
+    msgToWrite_mutex.lock();
     msgToWrite.push_back(msg);
+    msgToWrite_mutex.unlock();
     writing_mutex.unlock();
 }
 
@@ -138,9 +143,19 @@ bool Client::checkChars(char* msg)
     return true;
 }
 
-void Client::talk(char* msg)
+bool Client::talk()
 {
-    server->talk(msg, this);
+    bool ret = false;
+    char* msg = strtok(NULL, "\r");
+    if(msg != NULL)
+    {
+        server->talk(msg, this);
+        sendCode(SUCCESS);
+        ret = true;
+    }
+    else
+        sendCode(INVALID_MESSAGE);
+    return ret;
 }
 
 

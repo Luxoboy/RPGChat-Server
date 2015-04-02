@@ -25,7 +25,8 @@ public:
      */
     char* getNickname() const;
 private:
-    char nickname[11]; //Nickname displayed to other players. Set when joining
+    char nickname[11]; //Nickname displayed to other players. Set when joining.
+    int lifePoints;
 
     virtual bool execCmd(char* msg);
     

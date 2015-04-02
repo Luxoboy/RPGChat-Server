@@ -15,6 +15,7 @@
 Player::Player(Server* server, int id, int socket)
 : Client(server, id, socket)
 {
+    lifePoints = 10;
 }
 
 Player::~Player()
@@ -32,10 +33,13 @@ bool Player::execCmd(char* msg)
     }
     else if(strcmp("/talk", cmd) == 0)
     {
-        arg1 = strtok(NULL, "\r");
-        talk(arg1);
-        ret = true;
+        if(server->isPlaying())
+            ret = talk();
+        else
+            sendCode(GAME_HAS_NOT_STARTED);
     }
+    delete msg;
+    return ret;
 }
 
 bool Player::join(char* nickname)
@@ -62,6 +66,7 @@ bool Player::join(char* nickname)
             ret = true;
             strcpy(this->nickname, nickname);
             server->joinGame(this);
+            sendCode(SUCCESS);
         }
     }
     return ret;

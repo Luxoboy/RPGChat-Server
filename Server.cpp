@@ -7,12 +7,14 @@
 
 #include "Server.h"
 #include "GameMaster.h"
+#include "errcodes.h"
 
 #include <iostream>
 #include <string.h>
 #include <cstdio>
 #include <thread>
 #include <algorithm>
+#include <ctype.h>
 
 using namespace std;
 
@@ -27,6 +29,7 @@ Server::Server()
     accepting_thread = NULL;
     master = NULL;
     player_ids = 1;
+    NB_PLAYERS = -1;
     
     memset(&host_info, 0, sizeof host_info);
     host_info.ai_family = AF_UNSPEC;
@@ -131,7 +134,7 @@ void Server::accept_thread()
                 else
                 {
                     cout << "[SERVER] Adding new player." << endl;
-                    new Player(this, player_ids++, new_socket);
+                    connected_players.insert(new Player(this, player_ids++, new_socket));
                 }
             }
         }
@@ -145,9 +148,7 @@ int Server::joinGame(Player* player)
     cout << "[SERVER] New player joined the game: " << nickname << "." << endl;
     delete nickname;
     players.insert(player);
-    string nickname_str(nickname);
-    transform(nickname_str.begin(), nickname_str.end(), nickname_str.begin(), ::tolower);
-    nicknames.insert(string(nickname));
+    connected_players.erase(player);
 }
 
 void Server::talk(char* msg, Client* except)
@@ -170,6 +171,39 @@ void Server::talk(char* msg, Client* except)
     }
 }
 
+void Server::talkto(std::vector<char*>& nicknames, char* msg)
+{
+    cout << "[SERVER] Sending message to selected clients: \"" << msg << "\"" << endl;
+    char* duplicate, *nickname;
+    for(char* str : nicknames)
+    {
+        toLower(str);
+    }
+    for(vector<char*>::iterator it=nicknames.begin(); it!=nicknames.end();)
+    {
+        bool erased = false;
+        for(Player* p : players)
+        {
+            nickname = p->getNickname();
+            toLower(nickname);
+            if(strcmp(nickname, *it) == 0)
+            {
+                duplicate = new char[strlen(msg)+1];
+                strcpy(duplicate, msg);
+                p->sendMsg(duplicate);
+                nicknames.erase(it);
+                erased = true;
+                break;
+            }
+        }
+        if(!erased)
+            ++it;
+        else if(it == nicknames.end())
+            break;
+    }
+}
+
+
 bool Server::hasJoined(Player* p)
 {
     return players.find(p) != players.end();
@@ -177,11 +211,66 @@ bool Server::hasJoined(Player* p)
 
 bool Server::isNicknameAvailable(char* nickname)
 {
-    string str(nickname);
-    transform(str.begin(), str.end(), str.begin(), ::tolower);
-    return nicknames.find(str) == nicknames.end();
+    char* cpy = new char[strlen(nickname)+1];
+    strcpy(cpy, nickname);
+    toLower(cpy);
+    bool ret = true;
+    for(Player* p : players)
+    {
+        char* nickname_p = p->getNickname();
+        toLower(nickname_p);
+        if(strcmp(cpy, nickname_p) == 0)
+            ret = false;
+        delete nickname_p;
+        if(!ret)
+            break;
+    }
+    return ret;
 }
 
+bool compareStr(const char* a, const char* b)
+{
+    return strcmp(a, b) < 0;
+}
 
+void Server::toLower(char* str)
+{
+    int length = strlen(str);
+    for(int i = 0; i < length; i++)
+        str[i] = tolower(str[i]);
+}
 
+void Server::setNbPlayers(int nb)
+{
+    NB_PLAYERS = nb;
+}
 
+void Server::startGame()
+{
+    PLAYING = true;
+}
+
+void Server::endGame()
+{
+    PLAYING = false;
+}
+
+bool Server::isPlaying()
+{
+    return PLAYING;
+}
+
+int Server::getNbPlayers()
+{
+    return NB_PLAYERS;
+}
+
+int Server::getConnectedPlayers()
+{
+    return players.size();
+}
+
+bool Server::isSetNbPlayers()
+{
+    return NB_PLAYERS > 0;
+}

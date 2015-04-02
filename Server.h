@@ -18,6 +18,10 @@
 
 #include "Player.h"
 
+
+bool compareStr(const char* a, const char* b);
+
+
 class GameMaster;
 class Player;
 
@@ -62,6 +66,15 @@ public:
     void talk(char* msg, Client* except);
     
     /**
+     * Send a message to selected players.
+     * Players are chosen with their nicknames (case insensitive).
+     * Should only be called by game master.
+     * @param nicknames
+     * @param msg
+     */
+    void talkto(std::vector<char*> &nicknames, char* msg);
+    
+    /**
      * Tells wether a player has already joined the game.
      * @param p Player to check.
      * @return True if the player has already joined.
@@ -75,9 +88,57 @@ public:
      */
     bool isNicknameAvailable(char* nickname);
     
+    /**
+     * Starts the game.
+     */
+    void startGame();
+    
+    /**
+     * Ends game.
+     */
+    void endGame();
+    
+    /**
+     * Tells wether required number of players was set by master.
+     * @return 
+     */
+    bool isSetNbPlayers();
+    
+    /**
+     * Sets the required number of players for the game to start.
+     * @param nb
+     */
+    void setNbPlayers(int nb);
+    
+    /**
+     * Required number of players for the game to start.
+     * @return 
+     */
+    int getNbPlayers();
+    
+    /**
+     * Number of players who have joined the game.
+     * @return 
+     */
+    int getConnectedPlayers();
+    
+    /**
+     * Tells if the game has started and is running.
+     * @return True if running.
+     */
+    bool isPlaying();
+    
 private:
+    
+    
+    void accept_thread();
+    
+    static void toLower(char* str);
+    
     bool READY; //Indicates wether everything went well in construtor.
     bool ACCEPTING;
+    bool PLAYING; //Indicates if the game has started.
+    int NB_PLAYERS;
     int status; //Status variable
     int bind_socketfb; //Socket descriptor of listening socket.
     int player_ids; //Incremented id for players.
@@ -87,10 +148,8 @@ private:
     std::mutex accepting_mutex;
     
     GameMaster* master; //Master of the game.
-    std::set<Player*> players; //Players of the game.
-    std::set<std::string> nicknames;
-    
-    void accept_thread();
+    std::set<Player*> players; //Players who have joined the game.
+    std::set<Player*> connected_players; //Connected players who haven't joined.
 };
 
 #endif	/* SERVER_H */
