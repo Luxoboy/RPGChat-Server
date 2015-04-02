@@ -75,6 +75,7 @@ void Client::_writingThread()
             {
                 perror(prefix("writing thread"));
             }
+            delete msg;
         }
         msgToWrite.clear();
     }
@@ -113,7 +114,7 @@ char* Client::extractCmd(char* msg)
 
 void Client::sendCode(int code)
 {
-    char str[5];
+    char* str = new char[5];
     sprintf(str, "%d", code);
     msgToWrite.push_back(str);
     writing_mutex.unlock();

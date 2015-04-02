@@ -49,9 +49,20 @@ bool Player::join(char* nickname)
     }
     else
     {
-        ret = true;
-        strcpy(this->nickname, nickname);
-        server->joinGame(this);
+        if(server->hasJoined(this))
+        {
+            sendCode(YOU_ALREADY_JOINED);
+        }
+        else if(!server->isNicknameAvailable(nickname))
+        {
+            sendCode(NICKNAME_ALREADY_USED);
+        }
+        else
+        {
+            ret = true;
+            strcpy(this->nickname, nickname);
+            server->joinGame(this);
+        }
     }
     return ret;
 }

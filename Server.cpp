@@ -12,6 +12,7 @@
 #include <string.h>
 #include <cstdio>
 #include <thread>
+#include <algorithm>
 
 using namespace std;
 
@@ -144,6 +145,9 @@ int Server::joinGame(Player* player)
     cout << "[SERVER] New player joined the game: " << nickname << "." << endl;
     delete nickname;
     players.insert(player);
+    string nickname_str(nickname);
+    transform(nickname_str.begin(), nickname_str.end(), nickname_str.begin(), ::tolower);
+    nicknames.insert(string(nickname));
 }
 
 void Server::talk(char* msg, Client* except)
@@ -164,6 +168,14 @@ bool Server::hasJoined(Player* p)
 {
     return players.find(p) != players.end();
 }
+
+bool Server::isNicknameAvailable(char* nickname)
+{
+    string str(nickname);
+    transform(str.begin(), str.end(), str.begin(), ::tolower);
+    return nicknames.find(str) == nicknames.end();
+}
+
 
 
 

@@ -68,6 +68,13 @@ public:
      */
     bool hasJoined(Player* p);
     
+    /**
+     * Tells wether the chosen nickname is available.
+     * @param nickname Chosen nickname
+     * @return True if nickname is available.
+     */
+    bool isNicknameAvailable(char* nickname);
+    
 private:
     bool READY; //Indicates wether everything went well in construtor.
     bool ACCEPTING;
@@ -81,6 +88,7 @@ private:
     
     GameMaster* master; //Master of the game.
     std::set<Player*> players; //Players of the game.
+    std::set<std::string> nicknames;
     
     void accept_thread();
 };
