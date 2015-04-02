@@ -155,12 +155,18 @@ void Server::talk(char* msg, Client* except)
     cout << "[SERVER] Sending message to all clients: \"" << msg << "\"" << endl;
     if(master != except)
     {
-        master->sendMsg(msg);
+        char* duplicate = new char[strlen(msg)+1];
+        strcpy(duplicate, msg);
+        master->sendMsg(duplicate);
     }
     for(Player* p : players)
     {
         if(p != except)
-            p->sendMsg(msg);
+        {
+            char* duplicate = new char[strlen(msg)+1];
+            strcpy(duplicate, msg);
+            p->sendMsg(duplicate);
+        }
     }
 }
 
