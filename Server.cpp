@@ -266,11 +266,21 @@ void Server::setNbPlayers(int nb)
 void Server::startGame()
 {
     PLAYING = true;
+    for(Player* p : players)
+    {
+        p->sendCode(GAME_START_TRIGGER);
+    }
 }
 
 void Server::endGame()
 {
     PLAYING = false;
+    for(Player* p : players)
+    {
+        p->sendCode(GAME_END_TRIGGER);
+        connected_players.insert(p);
+    }
+    players.clear();
 }
 
 bool Server::isPlaying()
@@ -318,4 +328,35 @@ char *Server::playersInfo(Client* c)
     char* ret = new char[str.length()+1];
     strcpy(ret, str.c_str());
     return ret;
+}
+
+void Server::lp(vector<char*>& nicknames, int mod)
+{
+    cout << "[SERVER] Modifying lifepoints of " << nicknames.size() << "player(s)" << endl;
+    char* duplicate, *nickname;
+    for(char* str : nicknames)
+    {
+        toLower(str);
+    }
+    for(vector<char*>::iterator it=nicknames.begin(); it!=nicknames.end();)
+    {
+        bool erased = false;
+        for(Player* p : players)
+        {
+            nickname = p->getNickname();
+            toLower(nickname);
+            if(strcmp(nickname, *it) == 0)
+            {
+                if(p->isAlive())
+                    p->editLifePoint(mod);
+                nicknames.erase(it);
+                erased = true;
+                break;
+            }
+        }
+        if(!erased)
+            ++it;
+        else if(it == nicknames.end())
+            break;
+    }
 }

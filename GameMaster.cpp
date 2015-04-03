@@ -53,7 +53,10 @@ bool GameMaster::execCmd(char* msg)
     }
     else if(strcmp("/talk", cmd) == 0)
     {
-        ret = talk();
+        if(server->isSetNbPlayers())
+            ret = talk();
+        else
+            sendCode(MUST_SET_NB_PLAYERS);
     }
     else if(strcmp("/setnb", cmd) == 0)
     {
@@ -77,10 +80,10 @@ bool GameMaster::execCmd(char* msg)
     {
         if(!server->isSetNbPlayers())
             sendCode(MUST_SET_NB_PLAYERS);
-        else if(server->getConnectedPlayers() < server->getNbPlayers())
-            sendCode(NOT_ENOUGH_PLAYERS);
         else if(server->isPlaying())
             sendCode(GAME_HAS_ALREADY_STARTED);
+        else if(server->getConnectedPlayers() < server->getNbPlayers())
+            sendCode(NOT_ENOUGH_PLAYERS);
         else
         {
             server->startGame();
@@ -99,61 +102,116 @@ bool GameMaster::execCmd(char* msg)
     }
     else if(strcmp("/talkto", cmd) == 0)
     {
-        arg1 = strtok(NULL, " ");
-        arg2 = strtok(NULL, "\r");
-        if(arg1 == NULL || arg2 == NULL)
-            sendCode(MISSING_ARGUMENT);
-        else
+        if(server->isSetNbPlayers())
         {
-            vector<char*> nicknames;
-            char* nname = strtok(arg1, ",");
-            while(nname != NULL)
-            {
-                nicknames.push_back(nname);
-                nname = strtok(NULL, ",");
-            }
-            server->talkto(nicknames, arg2);
-            if(nicknames.size() > 0)
-                sendCode(NICKNAME_DOES_NOT_EXIST);
+            arg1 = strtok(NULL, " ");
+            arg2 = strtok(NULL, "\r");
+            if(arg1 == NULL || arg2 == NULL)
+                sendCode(MISSING_ARGUMENT);
             else
-                sendCode(SUCCESS);
+            {
+                vector<char*> nicknames;
+                char* nname = strtok(arg1, ",");
+                while(nname != NULL)
+                {
+                    nicknames.push_back(nname);
+                    nname = strtok(NULL, ",");
+                }
+                server->talkto(nicknames, arg2);
+                if(nicknames.size() > 0)
+                    sendCode(NICKNAME_DOES_NOT_EXIST);
+                else
+                    sendCode(SUCCESS);
+            }
         }
+        else
+            sendCode(MUST_SET_NB_PLAYERS);
     }
     else if(strcmp("/rand", cmd) == 0)
     {
-        arg1 = strtok(NULL, " ");
-        arg2 = strtok(NULL, "\r");
-        if(arg1 == NULL || arg2 == NULL)
-            sendCode(MISSING_ARGUMENT);
-        else
+        if(server->isPlaying())
         {
-            long min = strtol(arg1, NULL, 0),
-                    max = strtol(arg2, NULL, 0);
-            if(min != 0L && max != 0L && min < max)
-            {
-                int res = (rand()%(max+min+1))+min;
-                Value answer;
-                answer["cmd"] = "rand";
-                answer["rand"] = res;
-                FastWriter writer;
-                string str = writer.write(answer);
-                char* str_c = new char[str.length()+1];
-                strcpy(str_c, str.c_str());
-                sendMsg(str_c);
-            }
+            arg1 = strtok(NULL, " ");
+            arg2 = strtok(NULL, "\r");
+            if(arg1 == NULL || arg2 == NULL)
+                sendCode(MISSING_ARGUMENT);
             else
             {
-                sendCode(INTERVAL_BOUNDS_INVALID);
+                long min = strtol(arg1, NULL, 0),
+                        max = strtol(arg2, NULL, 0);
+                if(min != 0L && max != 0L && min < max)
+                {
+                    int res = (rand()%(max+min+1))+min;
+                    Value answer;
+                    answer["cmd"] = "rand";
+                    answer["rand"] = res;
+                    FastWriter writer;
+                    string str = writer.write(answer);
+                    char* str_c = new char[str.length()+1];
+                    strcpy(str_c, str.c_str());
+                    sendMsg(str_c);
+                }
+                else
+                {
+                    sendCode(INTERVAL_BOUNDS_INVALID);
+                }
             }
         }
+        else
+            sendCode(GAME_HAS_NOT_STARTED);
     }
     else if(strcmp("/players", cmd) == 0)
     {
-        ret = playersInfo();
+        if(server->isPlaying())
+            ret = playersInfo();
+        else
+            sendCode(GAME_HAS_NOT_STARTED);
+    }
+    else if(strcmp("/lp", cmd) == 0)
+    {
+        if(!server->isPlaying())
+            sendCode(GAME_HAS_NOT_STARTED);
+        else
+        {
+            arg1 = strtok(NULL, " ");
+            arg2 = strtok(NULL, " \r\n");
+            ret = lp(arg1, arg2);
+        }
     }
     delete msg;
     return ret;
 }
 
-
-
+bool GameMaster::lp(char* nicknames, char* mod)
+{
+    bool ret = false;
+    if(nicknames == NULL || mod == NULL)
+        sendCode(MISSING_ARGUMENT);
+    else
+    {
+        vector<char*> v_nicknames;
+        char* nname = strtok(nicknames, ",");
+        while(nname != NULL)
+        {
+            v_nicknames.push_back(nname);
+            nname = strtok(NULL, ",");
+        }
+        int mod_i = strtol(mod, NULL, 0);
+        if(mod_i != 0L)
+        {
+            server->lp(v_nicknames, mod_i);
+            if(v_nicknames.size() > 0)
+                sendCode(NICKNAME_DOES_NOT_EXIST);
+            else
+            {
+                ret = true;
+                sendCode(SUCCESS);
+            }
+        }
+        else
+        {
+            sendCode(MUST_BE_RELATIVE_INT);
+        }
+    }
+    return ret;
+}

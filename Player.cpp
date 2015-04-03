@@ -8,14 +8,18 @@
 #include "Player.h"
 #include "Server.h"
 #include "Client.h"
+#include "errcodes.h"
+
+#include "json/json.h"
 
 #include <cstring>
-#include "errcodes.h"
+
+using namespace std;
 
 Player::Player(Server* server, int id, int socket)
 : Client(server, id, socket)
 {
-    lifePoints = 10;
+    lifePoints = LP_START;
 }
 
 Player::~Player()
@@ -29,18 +33,44 @@ bool Player::execCmd(char* msg)
     char *arg1, *arg2;
     if(strcmp(cmd, "/join") == 0)
     {
-        ret = join(strtok(NULL, "\r"));
+        if(server->isSetNbPlayers())
+            if(server->getConnectedPlayers() >= server->getNbPlayers())
+                sendCode(NO_SLOT_AVAILABLE);
+            else
+                ret = join(strtok(NULL, "\r"));
+        else
+            sendCode(MASTER_HAS_NOT_SET_NB_PLAYERS);
     }
     else if(strcmp("/talk", cmd) == 0)
     {
-        if(server->isPlaying())
-            ret = talk();
+        if(server->hasJoined(this))
+            if(server->isPlaying())
+                ret = talk();
+            else
+                sendCode(GAME_HAS_NOT_STARTED);
         else
-            sendCode(GAME_HAS_NOT_STARTED);
+            sendCode(YOU_ARE_NOT_PLAYING);
     }
     else if(strcmp("/players", cmd) == 0)
     {
-        ret = playersInfo();
+        if(server->hasJoined(this))
+        {
+            if(server->isPlaying())
+            {
+                if(server->getNbPlayers() > 1)
+                    ret = playersInfo();
+                else
+                    sendCode(YOU_ARE_THE_ONLY_PLAYER);
+            }
+            else
+                sendCode(GAME_HAS_NOT_STARTED);
+        }
+        else
+            sendCode(YOU_ARE_NOT_PLAYING);
+    }
+    else if(strcmp("/lp", cmd) == 0)
+    {
+        ret = lp();
     }
     delete msg;
     return ret;
@@ -86,4 +116,46 @@ char* Player::getNickname() const
 int Player::getLifePoint()
 {
     return lifePoints;
+}
+
+bool Player::lp(char* nicknames, char* mod)
+{
+    bool ret = false;
+    if(server->hasJoined(this))
+    {
+        if(!server->isPlaying())
+            sendCode(GAME_HAS_NOT_STARTED);
+        else
+        {
+            Json::Value root;
+            root["cmd"] = "lp";
+            root["alive"] = lifePoints > 0;
+            root["lp"] = lifePoints;
+            Json::FastWriter wr;
+            string str = wr.write(root);
+            char* msg = new char[str.length()+1];
+            strcpy(msg, str.c_str());
+            sendMsg(msg);
+            ret = true;
+        }
+    }
+    else
+        sendCode(YOU_ARE_NOT_PLAYING);
+    return ret;
+}
+
+void Player::editLifePoint(int mod)
+{
+    if(lifePoints > 0)
+        lifePoints+=mod;
+}
+
+bool Player::isAlive()
+{
+    return lifePoints > 0;
+}
+
+void Player::reset()
+{
+    lifePoints = LP_START;
 }

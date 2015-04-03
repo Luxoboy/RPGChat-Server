@@ -137,6 +137,13 @@ public:
      */
     char *playersInfo(Client* c);
     
+    /**
+     * Modifies lifepoints of one or several players.
+     * @param nicknames List of nicknames.
+     * @param mod Modifier, can be positive or negative.
+     */
+    void lp(std::vector<char*> &nicknames, int mod);
+    
 private:
     
     

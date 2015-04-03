@@ -81,6 +81,8 @@ protected:
      * Gets players info from server and sends it.
      */
     bool playersInfo();
+    
+    virtual bool lp(char* nicknames, char* mod)=0;
 };
 
 #endif	/* CLIENT_H */

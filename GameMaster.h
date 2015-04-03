@@ -18,10 +18,10 @@ public:
     virtual ~GameMaster();
 private:
     virtual const char* prefix(const char* append = NULL);
-    
 
     virtual bool execCmd(char* msg);
 
+    virtual bool lp(char* nicknames, char* mod);
 
 };
 
