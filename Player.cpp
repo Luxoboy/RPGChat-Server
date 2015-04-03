@@ -20,6 +20,7 @@ Player::Player(Server* server, int id, int socket)
 : Client(server, id, socket)
 {
     lifePoints = LP_START;
+    sendCode(WELCOME);
 }
 
 Player::~Player()
@@ -31,13 +32,22 @@ bool Player::execCmd(char* msg)
     bool ret = false;
     char* cmd = extractCmd(msg);
     char *arg1, *arg2;
-    if(strcmp(cmd, "/join") == 0)
+    if(cmd == NULL)
+    {
+        ret = false;
+        sendCode(INVALID_COMMAND);
+    }
+    else if(strcmp(cmd, "/join") == 0)
     {
         if(server->isSetNbPlayers())
-            if(server->getConnectedPlayers() >= server->getNbPlayers())
+        {
+            if(server->hasJoined(this))
+                sendCode(YOU_ALREADY_JOINED);
+            else if(server->getConnectedPlayers() >= server->getNbPlayers())
                 sendCode(NO_SLOT_AVAILABLE);
             else
                 ret = join(strtok(NULL, "\r"));
+        }
         else
             sendCode(MASTER_HAS_NOT_SET_NB_PLAYERS);
     }
@@ -72,6 +82,9 @@ bool Player::execCmd(char* msg)
     {
         ret = lp();
     }
+    else
+        sendCode(INVALID_COMMAND);
+
     delete msg;
     return ret;
 }
@@ -87,11 +100,7 @@ bool Player::join(char* nickname)
     }
     else
     {
-        if(server->hasJoined(this))
-        {
-            sendCode(YOU_ALREADY_JOINED);
-        }
-        else if(!server->isNicknameAvailable(nickname))
+        if(!server->isNicknameAvailable(nickname))
         {
             sendCode(NICKNAME_ALREADY_USED);
         }

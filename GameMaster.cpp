@@ -47,7 +47,12 @@ bool GameMaster::execCmd(char* msg)
     bool ret = false;
     char* cmd = extractCmd(msg);
     char *arg1, *arg2;
-    if(strcmp(cmd, "/join") == 0)
+    if(cmd == NULL)
+    {
+        ret = false;
+        sendCode(INVALID_COMMAND);
+    }
+    else if(strcmp(cmd, "/join") == 0)
     {
         sendCode(CANNOT_JOIN_IF_MASTER);
     }
@@ -178,6 +183,8 @@ bool GameMaster::execCmd(char* msg)
             ret = lp(arg1, arg2);
         }
     }
+    else
+        sendCode(INVALID_COMMAND);
     delete msg;
     return ret;
 }

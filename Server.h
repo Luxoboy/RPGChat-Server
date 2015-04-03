@@ -144,6 +144,15 @@ public:
      */
     void lp(std::vector<char*> &nicknames, int mod);
     
+    /**
+     * Constructs JSON formatted data for the talk feature.
+     * @param nickname Nickname of the player who sends the message.
+     * @param msg The content of the message.
+     * @param master If the player is the master.
+     * @return The final string formatted in JSON to send.
+     */
+    char *talkToJSON(char* nickname, char* msg, bool master = false);
+    
 private:
     
     

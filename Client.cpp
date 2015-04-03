@@ -39,10 +39,10 @@ Client::~Client()
 
 void Client::_readingThread()
 {
-    char buf[1000];
+    char buf[1024];
     while(true)
     {
-        int res = recv(socket, buf, 1000, 0);
+        int res = recv(socket, buf, 1024, 0);
         if(res == 0)
         {
             cout << prefix("reading thread") << "Client shut down connexion.";
@@ -54,6 +54,7 @@ void Client::_readingThread()
             char *buf_free = new char[strlen(buf)+1];
             strcpy(buf_free, buf);
             execCmd(buf_free);
+            memset(buf, '\0', 1024);
         }
     }
 }

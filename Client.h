@@ -22,6 +22,10 @@ public:
     Client(Server *server, int id, int socket);
     virtual ~Client();
     
+    /**
+     * Sends message to client.
+     * @param msg Message to send.
+     */
     void sendMsg(char* msg);
     
     /**

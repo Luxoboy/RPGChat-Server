@@ -33,6 +33,7 @@ Server::Server()
     master = NULL;
     player_ids = 1;
     NB_PLAYERS = -1;
+    PLAYING = false;
     
     memset(&host_info, 0, sizeof host_info);
     host_info.ai_family = AF_UNSPEC;
@@ -174,17 +175,13 @@ void Server::talk(char* msg, Client* except)
     cout << "[SERVER] Sending message to all clients: \"" << msg << "\"" << endl;
     if(master != except)
     {
-        char* duplicate = new char[strlen(msg)+1];
-        strcpy(duplicate, msg);
-        master->sendMsg(duplicate);
+        master->sendMsg(talkToJSON(((Player*)except)->getNickname(), msg, false));
     }
     for(Player* p : players)
     {
         if(p != except)
         {
-            char* duplicate = new char[strlen(msg)+1];
-            strcpy(duplicate, msg);
-            p->sendMsg(duplicate);
+            p->sendMsg(talkToJSON(p->getNickname(), msg, except == master));
         }
     }
 }
@@ -206,9 +203,7 @@ void Server::talkto(std::vector<char*>& nicknames, char* msg)
             toLower(nickname);
             if(strcmp(nickname, *it) == 0)
             {
-                duplicate = new char[strlen(msg)+1];
-                strcpy(duplicate, msg);
-                p->sendMsg(duplicate);
+                p->sendMsg(talkToJSON(p->getNickname(), msg, true));
                 nicknames.erase(it);
                 erased = true;
                 break;
@@ -359,4 +354,20 @@ void Server::lp(vector<char*>& nicknames, int mod)
         else if(it == nicknames.end())
             break;
     }
+}
+
+char* Server::talkToJSON(char* nickname, char* msg, bool master)
+{
+    Json::Value root;
+    root["cmd"] = "talk";
+    root["fromMaster"] = master;
+    if(!master)
+        root["nickname"] = nickname;
+    root["msg"] = msg;
+    Json::FastWriter wr;
+    string str = wr.write(root);
+    char* ret = new char[str.length()+1];
+    strcpy(ret, str.c_str());
+    delete nickname;
+    return ret;
 }
