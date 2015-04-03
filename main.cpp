@@ -7,6 +7,8 @@
 
 #include <cstdlib>
 
+#include "Server.h"
+#include <iostream>
 using namespace std;
 
 /*
@@ -14,7 +16,10 @@ using namespace std;
  */
 int main(int argc, char** argv)
 {
-
+    Server s1;
+    if(s1.ready())
+        s1.accept();
+    
     return 0;
 }
 
